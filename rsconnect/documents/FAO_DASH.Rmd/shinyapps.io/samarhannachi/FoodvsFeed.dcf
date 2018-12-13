@@ -1,0 +1,12 @@
+name: FoodvsFeed
+title: FoodvsFeed
+username:
+account: samarhannachi
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 615370
+bundleId: 1760618
+url: https://samarhannachi.shinyapps.io/FoodvsFeed/
+when: 1544703687.44101
+asMultiple: FALSE
+asStatic: FALSE

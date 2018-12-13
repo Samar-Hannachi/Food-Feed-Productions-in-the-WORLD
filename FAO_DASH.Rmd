@@ -1,0 +1,329 @@
+---
+title: "Food vs Feed"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    social: menu
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(ggplot2)
+FAO <- read.csv("FAO.csv")
+names(FAO) <- gsub(x = names(FAO), pattern = "\\Y", replacement = "")
+summary(FAO)#Missing Values
+
+```
+
+
+```{r include = FALSE}
+#We will see who are the best producers in food and feed through the years
+DataSunRow <- mutate(FAO, Total=apply(FAO[11:63], 1, sum, na.rm = T))
+DataSunRow <- DataSunRow %>% 
+  group_by(FAO$Area.Abbreviation,Element) %>%
+  summarise(Tot_Production = sum(Total))
+DataSunRow = DataSunRow[order(-DataSunRow$Tot_Production),c(1,2,3)]
+DataSunRowFood <- subset(DataSunRow, Element == "Food")
+DataSunRowFeed <- subset(DataSunRow, Element == "Feed")
+
+```
+
+
+```{r include = FALSE}
+#We will see which are the highest products producted in food and feed through the years
+DataSunRowProduct <- mutate(FAO, Total=apply(FAO[11:63], 1, sum, na.rm = T))
+DataSunRowProduct <- DataSunRowProduct %>% 
+  group_by(DataSunRowProduct$Item,Element) %>%
+  summarise(Tot_Production = sum(Total))
+
+DataSunRowProduct = DataSunRowProduct[order(-DataSunRowProduct$Tot_Production),c(1,2,3)]
+DataSunRowProductFood <- subset(DataSunRowProduct, Element == "Food")
+DataSunRowProductFeed <- subset(DataSunRowProduct, Element == "Feed")
+
+```
+
+
+Hey you !
+===================================== 
+### **This Dashboard's Aim**
+This Dashboard's role is to diplay the **evolution of FOOD & FEED productions** over time. In its way, it will show you who are the **top producers** in the considered dataset and which are the **top produced products**.You will also be able to see the evolution of food and feed productions for each country over the years through an **interactive map**. 
+
+</br>
+
+<div align="center"> <p><img src="TS.png"  width="200"></p> <h4>**Fisher Tiger**</h4></div>
+
+<footer>
+  <p>**Posted by:** Samar Hannachi</p>
+  <p>**Contact information:** <a href="mailto:hannachisamar1994@gmail.com">
+  hannachisamar1994@gmail.com</a>.</p>
+</footer>
+
+
+
+
+### **About the Data**
+This dataset is a blending of food and feed products, countries and years to answer big questions like comparisons between food produced for human and feed produced for animals.
+It contains enough worldwide data to observe our food consumption and to detect from where does our food come.
+
+**FooD & FeeD ?**
+<ul style="list-style-type:square">
+  <li>**Food :** refers to the total amount of the food item available as human food during the reference period.</li>
+  <li>**Feed :** refers to the quantity of the food item available for feeding to the livestock and poultry during the reference period.</li>
+</ul>
+<div align="center">  <p><img src="FOOD AND FEED.jpeg"  width="200"></p> <h4>Food & Feed</h4> </div>
+
+**Where does the data come from ?**
+
+This dataset was provided by "The Food and Agriculture Organization of the United Nations" which has a lot of other interesting datasets in the subject and used in a the "Who eats the food we grow ?" kaggle kernel.
+
+<div align="center">  <p><img src="FAO.gif" width="100"></p> <h4>**Kaggle Competition :** <a href="https://www.kaggle.com/dorbicycle/world-foodfeed-production">Who eats the food we grow ?</a>.</h4> </div>
+
+
+
+
+The Acers{data-orientation=rows}
+===================================== 
+Column {data-height=350} {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+### Top FOOD Producers
+
+```{r}
+FoodProd = arrange(DataSunRowFood,desc(DataSunRowFood$Tot_Production),DataSunRowFood$Element) 
+tOPfOOD = FoodProd[1:10,] 
+ggplot(data=tOPfOOD, aes(x=reorder(tOPfOOD$`FAO$Area.Abbreviation`,-tOPfOOD$Tot_Production),y=tOPfOOD$Tot_Production)) +
+  geom_bar(stat="identity", fill="#009999")+
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=13, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=12, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=12, face="bold.italic")
+) +
+   labs(x="Country",y="Total Production",title="TOP 10 of FOOD Producers (1961 ~ 2013)")
+
+
+```
+
+### Top FEED Producers
+
+```{r}
+FeedProd = arrange(DataSunRowFeed,desc(DataSunRowFeed$Tot_Production),DataSunRowFeed$Element) 
+tOPfeeD = FeedProd[1:10,] 
+ggplot(data=tOPfeeD, aes(x= reorder(tOPfeeD$`FAO$Area.Abbreviation`,-tOPfeeD$Tot_Production), y=tOPfeeD$Tot_Production))+
+  geom_bar(stat="identity", fill="#0000FF")+
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=13, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=12, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=12, face="bold.italic")
+)+
+   labs(x="Country",y="Total Production",title="TOP 10 of FEED Producers (1961 ~ 2013)")
+
+```
+
+### Top FOOD Products
+
+```{r}
+FoodProduct = arrange(DataSunRowProductFood,desc(DataSunRowProductFood$Tot_Production),DataSunRowProductFood$Element) 
+tOPfOODProduct = FoodProduct[1:10,] 
+ggplot(data=tOPfOODProduct, aes(x= reorder(tOPfOODProduct$`DataSunRowProduct$Item`,-tOPfOODProduct$Tot_Production),y=tOPfOODProduct$Tot_Production)) +
+  geom_bar(stat="identity", fill="#009999")+
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=13, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=12, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=12, face="bold.italic")
+)+
+   labs(x="Product",y="Total Produced",title="TOP 10 of FOOD Produced (1961 ~ 2013)")+
+  coord_flip()
+
+```
+
+### Top FEED Products
+
+```{r}
+FeedProduct = arrange(DataSunRowProductFeed,desc(DataSunRowProductFeed$Tot_Production),DataSunRowProductFeed$Element) 
+tOPfeeDProduct = FeedProduct[1:10,] 
+ggplot(data=tOPfeeDProduct, aes(x= reorder(tOPfeeDProduct$`DataSunRowProduct$Item`,-tOPfeeDProduct$Tot_Production),y=tOPfeeDProduct$Tot_Production)) +
+  geom_bar(stat="identity", fill="#0000FF")+
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=13, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=12, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=12, face="bold.italic")
+)+
+   labs(x="Product",y="Total Produced",title="TOP 10 of FEED Produced (1961 ~ 2013)")+
+  coord_flip()
+
+```
+
+Time Series 
+===================================== 
+
+```{r include=FALSE}
+
+DataSunCol=aggregate(. ~Area.Abbreviation+Element, data=FAO[,c(1,7,11:63)], sum, na.rm=TRUE)
+DataSunColFOOD <- subset(DataSunCol, Element == "Food")
+DataSunColFOODt <- as.data.frame(t(DataSunColFOOD))
+colnames(DataSunColFOODt) <- as.character(unlist(DataSunColFOODt[1,]))
+DataSunColFOODt <- DataSunColFOODt[-c(1,2),]
+
+DataSunColFEED <- subset(DataSunCol, Element == "Feed")
+DataSunColFEEDt <- as.data.frame(t(DataSunColFEED))
+colnames(DataSunColFEEDt) <- as.character(unlist(DataSunColFEEDt[1,]))
+DataSunColFEEDt <- DataSunColFEEDt[-c(1,2),]
+
+Date <- seq(1961,2013,by=1)
+DataSunColFOODt <- cbind(Date,DataSunColFOODt)
+DataSunColFEEDt <- cbind(Date,DataSunColFEEDt)
+DataSunColFOODt <-as.data.frame( lapply(DataSunColFOODt, as.numeric))
+DataSunColFEEDt <- as.data.frame(lapply(DataSunColFEEDt, as.numeric))
+
+```
+
+
+```{r include = FALSE}
+#Evolution by product over the years
+DataSunColProduct=aggregate(. ~Element+Item, data=FAO[,c(5,7,11:63)], sum, na.rm=TRUE)
+
+DataSunColFOODpRODUCT <- subset(DataSunColProduct, Element == "Food")
+DataSunColFOODpRODUCT <- DataSunColFOODpRODUCT[,-1]
+DataSunColFOODpRODUCTt <- as.data.frame(t(DataSunColFOODpRODUCT))
+colnames(DataSunColFOODpRODUCTt ) <- as.character(unlist(DataSunColFOODpRODUCTt [1,]))
+DataSunColFOODpRODUCTt  <- DataSunColFOODpRODUCTt [-1,]
+
+DataSunColFEEDpRODUCT <- subset(DataSunColProduct, Element == "Feed")
+DataSunColFEEDpRODUCT <- DataSunColFEEDpRODUCT[,-1]
+DataSunColFEEDpRODUCTt <- as.data.frame(t(DataSunColFEEDpRODUCT))
+colnames(DataSunColFEEDpRODUCTt) <- as.character(unlist(DataSunColFEEDpRODUCTt[1,]))
+DataSunColFEEDpRODUCTt <- DataSunColFEEDpRODUCTt[-1,]
+
+Date <- seq(1961,2013,by=1)
+DataSunColFOODpRODUCTt <- cbind(Date,DataSunColFOODpRODUCTt)
+DataSunColFEEDpRODUCTt <- cbind(Date,DataSunColFEEDpRODUCTt)
+DataSunColFOODpRODUCTt <-as.data.frame( lapply(DataSunColFOODpRODUCTt, as.numeric))
+DataSunColFEEDpRODUCTt <- as.data.frame(lapply(DataSunColFEEDpRODUCTt, as.numeric))
+
+names(DataSunColFOODpRODUCTt) <- gsub(x = names(DataSunColFOODpRODUCTt), pattern = "\\.", replacement = " ")
+names(DataSunColFEEDpRODUCTt) <- gsub(x = names(DataSunColFEEDpRODUCTt), pattern = "\\.", replacement = " ")
+
+
+```
+
+Inputs {.sidebar}
+-------------------------------------
+
+```{r}
+selectInput("variable", "Time Evolution of Food & Feed for :",choices = colnames(DataSunColFOODt[,-1]))
+selectInput("variable1", "Food & Feed Boxplot in :",choices = colnames(DataSunCol[,-c(1,2)]))
+selectInput("variable2", "Time Evolution of the Production of:",choices =colnames(DataSunColFEEDpRODUCTt[,-1]))
+
+```
+ 
+Column
+-------------------------------------
+
+### FOOD & FEED Production Evolution
+    
+```{r}
+
+renderPlot({
+
+ ggplot() + 
+  geom_point(data = DataSunColFOODt, aes(x = Date, y = DataSunColFOODt[,input$variable]), color = "#009999") +
+  geom_point(data = DataSunColFEEDt, aes(x = Date, y = DataSunColFEEDt[,input$variable]), color = "#0000FF") +
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=14, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=13, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=13, face="bold.italic"),
+axis.text.x = element_text(hjust = 1),
+
+)+
+   labs(x="Year",y="Production",title="Evolution of FOOD & FEED Production (1961 ~ 2013)")
+
+})
+```
+
+Column
+-------------------------------------
+### Element Comparison
+    
+```{r}
+
+renderPlot({
+
+ggplot(data = DataSunCol, aes(x = DataSunCol$Element,
+                                  y=DataSunCol[,input$variable1],fill=DataSunCol$Element)) + geom_boxplot() +
+    ylim(-1000,10000)+
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=14, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=13, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=13, face="bold.italic"),
+axis.text.x = element_text(hjust = 1)
+)+
+   labs(x="Element",y="Production",title="FOOD & FEED Comparison")+ guides(fill=guide_legend(title="Element"))+ scale_fill_manual(values=c("#009999", "#0000FF"))
+
+})
+```
+
+
+    
+### Product Production Evolution
+
+```{r}
+renderPlot({
+
+ ggplot() + 
+  geom_point(data = DataSunColFOODpRODUCTt, aes(x = Date, y = DataSunColFOODpRODUCTt[,input$variable2]), color = "#009999") +
+  geom_point(data = DataSunColFEEDpRODUCTt, aes(x = Date, y = DataSunColFEEDpRODUCTt[,input$variable2]), color = "#0000FF") +
+  theme_gray()+
+ theme(
+plot.title = element_text(color="slategrey", size=14, face="bold",hjust = 0.5),
+axis.title.x = element_text(color="snow4", size=13, face="bold.italic"),
+axis.title.y = element_text(color="snow4", size=13, face="bold.italic"),
+axis.text.x = element_text(hjust = 1)
+)+
+   labs(x="Year",y="Production",title="Evolution of Production for the Product (1961 ~ 2013)")
+
+})
+```
+
+
+World Map
+===================================== 
+
+```{r}
+DataSunCol=aggregate(. ~Area.Abbreviation+Element, data=FAO[,c(1,7,11:63)], sum, na.rm=TRUE)
+DataSunRowmap <-unique(left_join(DataSunCol, select(FAO, c(Area.Abbreviation,longitude,latitude)), by = "Area.Abbreviation" ))
+DataSunRowFOODmap <- subset(DataSunRowmap, Element == "Food")
+DataSunRowFEEDmap <- subset(DataSunRowmap, Element == "Feed")
+DataSunRowFOODmap <- DataSunRowFOODmap[-c(26,27,29),]
+DataSunRowFEEDmap <- DataSunRowFEEDmap[-c(26,27,29),]
+```
+
+
+```{r}
+library(leaflet)
+library(dplyr)
+
+shinyApp(
+  ui = fluidPage(
+    sliderInput("integer", "Year Slider",
+                  min = 1961, max = 2013,
+                  value = 1961,step=1,sep = ""),
+    leafletOutput("MapPlot1")
+  ),
+  
+  server = function(input, output) {
+  
+    output$MapPlot1 <- renderLeaflet({
+    r= match(input$integer,names(DataSunRowFOODmap))
+ leaflet(DataSunRowFOODmap) %>% addTiles() %>% addCircles(lng=DataSunRowFOODmap$longitude, lat=DataSunRowFOODmap$latitude, popup="The birthplace of R", radius  = DataSunRowFOODmap[,r],color = "#009999") %>% addCircles(lng=DataSunRowFEEDmap$longitude, lat=DataSunRowFEEDmap$latitude, popup="The birthplace of R", radius  = DataSunRowFEEDmap[,r],color="#0000FF")})})
+
+```
+
+
